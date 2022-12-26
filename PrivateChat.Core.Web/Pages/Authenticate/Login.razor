@@ -1,0 +1,52 @@
+﻿@page "/login"
+@inject NavigationManager NavigationManager
+@inject IUserService UserService
+@layout AuthenticateLayout
+
+<div class="card">
+    <h4 class="card-header">Login</h4>
+    <div class="card-body">
+        <EditForm Model="@loginData" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label>Username</label>
+                <InputText @bind-Value="loginData.Username" class="form-control" />
+                <ValidationMessage For="@(() => loginData.Username)" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <InputText @bind-Value="loginData.Password" type="password" class="form-control" />
+                <ValidationMessage For="@(() => loginData.Password)" />
+            </div>
+            <button disabled="@loading" class="btn btn-primary">
+                @if (loading) 
+                {
+                    <span class="spinner-border spinner-border-sm mr-1"></span>
+                }
+                Login
+            </button>
+            <NavLink href="register" class="btn btn-link">Register</NavLink>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private LoginCredentials loginData = new();
+    private bool loading;
+
+    private async void OnValidSubmit()
+    {
+        loading = true;
+        try
+        {   
+            await UserService.Login(loginData);
+            StateHasChanged();
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+}
