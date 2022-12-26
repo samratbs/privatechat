@@ -1,19 +1,29 @@
 ﻿@inherits LayoutComponentBase
+@inject IUserService UserService
 
-<PageTitle>PrivateChat.Core.Web</PageTitle>
+<PageTitle>Private Chat</PageTitle>
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+    @if (LoggedIn)
+    {
+        <div class="sidebar">
+            <NavMenu/>
         </div>
-
+    }
+    <main>
+        <h1>Main Layout Test</h1>
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    public bool LoggedIn=false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        LoggedIn = await UserService.GetCurrentUser() != null ? true : false;
+        await InvokeAsync(StateHasChanged);
+    }
+}

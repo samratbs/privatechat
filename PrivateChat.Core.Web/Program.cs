@@ -1,13 +1,30 @@
+﻿using AutoMapper;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
-using PrivateChat.Core.Web.Hubs;
+using PrivateChat.Core.Web.Helpers;
+using PrivateChat.Core.Web.Services;
+using PrivateChat.Infrastructure.Data;
+using PrivateChat.Infrastructure.Repository;
+using System.ComponentModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+var configuration = builder.Configuration;
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddBlazoredLocalStorage();
+
+builder.Services.AddSingleton<IConfiguration>(configuration);
+builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<IHubProcessor, HubProcessor>();
+builder.Services.AddSingleton<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 

@@ -1,6 +1,7 @@
 ﻿@page "/"
-@inject NavigationManager NavigationManager
+@inject IHubProcessor _hubProcessor
 @implements IAsyncDisposable
+@layout HomeLayout
 
 <PageTitle>Private Chat</PageTitle>
 <h3>Chat with Friends</h3>
@@ -8,15 +9,22 @@
 @if (!isConnected)
 {
     <div class="input-group">
-        <input @bind="username" class="form-control" placeholder="what is your name?">
+        <input @bind="chat.Username" class="form-control" placeholder="what is your name?">
         <button class="btn btn-primary form-control-append" @onclick="ConnectToHub">Connect</button>
     </div>
 }
 else
-{
-    <textarea style="width:100%; height:500px;">@messages</textarea>
+{   
+    <div>
+         @foreach (string message in chat.ChatMessages)
+            {   
+                <br/>
+                @message;
+            }
+    </div>
+   
     <div class="input-group">
-        <input @bind-value="message" @bind-value:event="oninput" @onkeyup="HandleInput" class="form-control">
+        <input @bind-value="chat.Message" @bind-value:event="oninput" @onkeyup="HandleInput" class="form-control">
         <button class="btn btn-primary form-group-append" @onclick="Send" disabled="@(!isConnected)">=></button>
     </div>
 }
@@ -24,9 +32,7 @@ else
 
 @code {
     private HubConnection? hubConnection;
-    private string messages = string.Empty;
-    private string username = string.Empty;
-    private string message = string.Empty;
+    private Chat chat = new() {ChatMessages = new()};
 
     private async Task ConnectToHub()
     {
@@ -35,10 +41,10 @@ else
         .Build();
 
         //Listen for Event
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        hubConnection.On<Chat>("ReceiveMessage", (chat) =>
         {
-            var msg = $"{(string.IsNullOrEmpty(user) ? "" : user + ": ")} {message}";
-            messages += msg + "\n";
+            string formattedMessage = $"{(string.IsNullOrEmpty(chat.Username) ? "" : chat.Username + ": ")} {chat.Message}";
+            this.chat.ChatMessages.Add(formattedMessage);
             InvokeAsync(StateHasChanged);
         });
 
@@ -47,10 +53,8 @@ else
 
     private async Task Send()
     {
-        if (hubConnection != null)
-        {
-            await hubConnection.SendAsync("SendMessage", username, message);
-        }
+        await _hubProcessor.SendMessageAsync(hubConnection, chat);
+        chat.Message = "";
     }
 
     private async Task HandleInput(KeyboardEventArgs args)
@@ -61,7 +65,7 @@ else
         }
     }
 
-    public bool isConnected => hubConnection?.State == HubConnectionState.Connected;
+    public bool isConnected => _hubProcessor.IsConnected(hubConnection);
 
     public async ValueTask DisposeAsync()
     {

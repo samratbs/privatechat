@@ -1,0 +1,19 @@
+﻿@inherits LayoutComponentBase
+@inject IUserService UserService
+@inject NavigationManager NavigationManager
+@layout MainLayout
+
+@Body
+
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var user = await UserService.GetCurrentUser();
+        if (user == null)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
+}
