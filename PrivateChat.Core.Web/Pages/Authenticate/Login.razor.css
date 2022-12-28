@@ -1,0 +1,58 @@
+﻿.card {
+    background-color: #323645;
+    color: white;
+    width: 25%;
+    padding-top: 50px;
+    border-radius: 15px;
+    margin-top: 100px;
+}
+
+.title-text {
+    padding-top: 20px;
+    text-align: center;
+    border: 0;
+}
+
+.card-body {
+    font-family: 'Open Sans', sans-serif;
+    text-align:center;
+    margin-top: 20px;
+}
+
+::deep input {
+    border-radius: 10px;
+    background-color: #3d404a;
+    color: white;
+    width: 80%;
+    border-color: #3d404a;
+    margin: auto;
+    font-size: 14px;
+}
+    ::deep input:focus {
+        border-color: #5568fe;
+    }
+
+.btn {
+    border-radius: 10px;
+    padding: 5px 20px;
+    background-color: #5568fe;
+    border: 0;
+}
+
+    .btn:hover {
+        background-color: #4d5ee5;
+    }
+
+::deep a {
+    color: #5568fe;
+    padding:0;
+}
+
+    ::deep a:hover {
+        color: #4d5ee5;
+    }
+
+::deep .validation-message {
+    color: orangered;
+    font-size: 14px;
+}
