@@ -3,6 +3,7 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
+using MudBlazor.Services;
 using PrivateChat.Core.Web.Helpers;
 using PrivateChat.Core.Web.Services;
 using PrivateChat.Infrastructure.Data;
@@ -17,6 +18,7 @@ var configuration = builder.Configuration;
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddMudServices();
 
 builder.Services.AddSingleton<IConfiguration>(configuration);
 builder.Services.AddSingleton<MongoDbContext>();

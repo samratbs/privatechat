@@ -1,4 +1,5 @@
 ﻿@page "/register"
+@using Microsoft.AspNetCore.WebUtilities;
 @inject NavigationManager NavigationManager
 @inject IUserService UserService
 @layout AuthenticateLayout
@@ -7,6 +8,10 @@
     <h4 class="title-text">Register For PrivateChat</h4>
     <div class="card-body">
         <EditForm Model="@newUser" OnValidSubmit="OnValidSubmit">
+            @if (usernameExists && statusCode != 200)
+            {
+                <MudAlert Severity="Severity.Error">@message</MudAlert>
+            }
             <DataAnnotationsValidator />
             <div class="form-group p-3">
                 <div class="label-format">
@@ -19,7 +24,7 @@
                 <div class="label-format">
                     <label>Password</label>
                 </div>
-                <InputText @bind-Value="newUser.Password" class="form-control shadow-none" placeholder="Enter your Password" />
+                <InputText @bind-Value="newUser.Password" type="password" class="form-control shadow-none" placeholder="Enter your Password" />
                 <ValidationMessage For="@(() => newUser.Password)" />
             </div>
             <div class="p-2">
@@ -41,6 +46,9 @@
 @code {
     private User newUser = new();
     private bool loading;
+    private bool usernameExists;
+    private int statusCode = 200;
+    private string? message;
 
     private async void OnValidSubmit()
     {
@@ -48,8 +56,24 @@
         loading = true;
         try
         {
-            await UserService.Register(newUser);
-            NavigationManager.NavigateTo("/login");
+            var response = await UserService.Register(newUser);
+            usernameExists = response.Found;
+            message = response.Message;
+            statusCode = response.StatusCode;
+            if (!usernameExists)
+            {   
+                loading = false;
+                StateHasChanged();
+                var queryStrDict = new Dictionary<string, string>
+                    {
+                        ["NewRegister"] = "Y",
+                    };
+                NavigationManager.NavigateTo(
+                    QueryHelpers.AddQueryString("/login", queryStrDict)
+                );   
+            }
+            loading = false;
+            StateHasChanged();
         }
         catch (Exception ex)
         {

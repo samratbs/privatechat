@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using PrivateChat.Domains;
 using PrivateChat.Domains.LocalStorage;
 using PrivateChat.Domains.Models;
+using PrivateChat.Domains.Responses;
 using PrivateChat.Infrastructure.Repository;
 
 namespace PrivateChat.Core.Web.Services
@@ -20,19 +21,70 @@ namespace PrivateChat.Core.Web.Services
             _localStorage = localStorage;
             _mapper = mapper;
         }
-        public async Task Login(LoginCredentials loginCredentials)
+        public async Task<Response> Login(LoginCredentials loginCredentials)
         {
-            var user = await _userRepository.ValidateCredentials(loginCredentials);
-            if (user.Count>0)
+            try
             {
-                var storeUser = _mapper.Map<UserStore>(user.FirstOrDefault());
-                await _localStorage.SetItemAsync("user", storeUser);
+                var user = await _userRepository.ValidateCredentials(loginCredentials);
+                if (user.Count > 0)
+                {
+                    var storeUser = _mapper.Map<UserStore>(user.FirstOrDefault());
+                    await _localStorage.SetItemAsync("user", storeUser);
+                    return new Response()
+                    {
+                        StatusCode = 200,
+                        Message = "Logged in Successfully.",
+                        Found = true
+                    };
+                }
+                return new Response()
+                {
+                    StatusCode = 400,
+                    Message = "Your Username or Password is incorrect.",
+                    Found = false
+                };
             }
+            catch (Exception ex)
+            {
+                return new Response()
+                {
+                    StatusCode = 500,
+                    Message = "Internal Server Error. Please contact the admins.",
+                    Found = false
+                };
+            } 
         }
-        public async Task Register(User newUser)
+        public async Task<Response> Register(User newUser)
         {
-            if(await _userRepository.IsUserAvailable(newUser))
-                await _userRepository.AddUserToDB(newUser);
+            try
+            {
+                if (await _userRepository.IsUserAvailable(newUser))
+                {
+                    await _userRepository.AddUserToDB(newUser);
+                    return new Response()
+                    {
+                        StatusCode = 200,
+                        Message = "New User Created Successfully.",
+                        Found = false
+                    };
+            }
+                return new Response()
+                {
+                    StatusCode = 400,
+                    Message = "This user already exists. Please choose a new username.",
+                    Found = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response()
+                {
+                    StatusCode = 500,
+                    Message = "Internal Server Error. Please contact the admins.",
+                    Found = false
+                };
+            }
+            
         }
 
         public async Task Logout()

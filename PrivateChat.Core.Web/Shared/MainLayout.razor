@@ -2,7 +2,9 @@
 @inject IUserService UserService
 
 <PageTitle>Private Chat</PageTitle>
-
+<MudThemeProvider @bind-IsDarkMode="@themeOn"/>
+<MudDialogProvider />
+<MudSnackbarProvider />
 <div class="page">
     @if (LoggedIn)
     {
@@ -20,6 +22,7 @@
 
 @code {
     public bool LoggedIn=false;
+    private bool themeOn = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

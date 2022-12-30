@@ -8,6 +8,14 @@
     <div class="card-body">
         <EditForm Model="@loginData" OnValidSubmit="OnValidSubmit">
             <DataAnnotationsValidator />
+            @if(!userFound && statusCode != 200)
+            {
+                <MudAlert Severity="Severity.Error">@message</MudAlert>
+            }
+            @if (NewRegister=="Y")
+            {
+                <MudAlert Severity="Severity.Success">User Registered Successfully.</MudAlert>
+            }
             <div class="form-group p-3">
                 <InputText @bind-Value="loginData.Username" class="form-control shadow-none" placeholder="Username" />
                 <ValidationMessage For="@(() => loginData.Username)" />
@@ -33,17 +41,34 @@
 </div>
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string NewRegister { get; set; } = "N";
+
     private LoginCredentials loginData = new();
     private bool loading;
+    private bool userFound = false;
+    private int statusCode = 200;
+    private string? message;
 
     private async void OnValidSubmit()
     {
+        NewRegister = "N";
         loading = true;
         try
         {   
-            await UserService.Login(loginData);
+            var user = await UserService.Login(loginData);
+            userFound = user.Found;
+            statusCode = user.StatusCode;
+            message = user.Message;
+            if (userFound)
+            {   
+                loading = false;
+                StateHasChanged();
+                NavigationManager.NavigateTo("/");
+            }
+            loading = false;
             StateHasChanged();
-            NavigationManager.NavigateTo("/");
         }
         catch (Exception ex)
         {
