@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject IUserService userService
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Private Chat</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -15,13 +17,8 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            <NavLink class="nav-link" @onclick="Logout" style="cursor:pointer">
+                <MudIcon Icon="@Icons.Filled.Logout" Title=" Logout" style="margin-right:9px;"/> Logout
             </NavLink>
         </div>
     </nav>
@@ -29,11 +26,24 @@
 
 @code {
     private bool collapseNavMenu = true;
-
+    [Inject] private IDialogService DialogService { get; set; }
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+    private async void Logout()
+    {   
+        bool? result = await DialogService.ShowMessageBox(
+            "Log Out?",
+            "You will Log Out of this account but can Login anytime.",
+            yesText: "Yes", cancelText: "No");
+        if (result!=null)
+        {
+            await userService.Logout();
+        }
+        StateHasChanged();
+       
     }
 }
