@@ -7,6 +7,7 @@
 @layout HomeLayout
 
 <PageTitle>Private Chat</PageTitle>
+<h3>Chat with Friends</h3>
 
 
 @if (!isConnected && !isLoaded)
@@ -15,20 +16,20 @@
     </div>
 }
 else
-{
+{   
     <h2 style="text-align:center;">Chat with Friends</h2>
     <div class="message-box">
-            @foreach (string message in chat.ChatMessages)
-            {
+         @foreach (string message in chat.ChatMessages)
+            {   
             <div class="@((message.Split(':')[0]==currentUsername?"my-message-body" : "message-body"))">
                 <MudIcon Icon="@Icons.Material.Filled.Person" Title="Person" class="message-icon" />
                 <div class="@((message.Split(':')[0]==currentUsername?"my-message" : "message-text"))">
                     @if (message.Split(':')[0] != currentUsername)
                     {
                       <div class="username">@message.Split(':')[0]</div>
-                    } 
+            }
                     <span>@message.Split(':')[1]</span>
-                </div>
+    </div>
             </div>
                 ;
             }
@@ -42,6 +43,7 @@ else
         </div>
     </div>
 }
+
 
 @code {
     private HubConnection? hubConnection;
