@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using PrivateChat.Domains;
 using PrivateChat.Domains.LocalStorage;
 using PrivateChat.Domains.Models;
 
@@ -12,6 +13,9 @@ namespace PrivateChat.Core.Web.Helpers
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
                 .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Avatar));
+            CreateMap<Chat, Messages>()
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message));
         }
     }
 }

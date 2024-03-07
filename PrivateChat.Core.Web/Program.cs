@@ -26,7 +26,11 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddSingleton<IHubProcessor, HubProcessor>();
+builder.Services.AddSingleton<IChatProcessor, ChatProcessor>();
+
 builder.Services.AddSingleton<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<IChatRepository, ChatRepository>();
+
 
 var app = builder.Build();
 
