@@ -1,38 +1,86 @@
 ﻿@page "/"
+@using PrivateChat.Domains.LocalStorage;
 @inject IHubProcessor _hubProcessor
+@inject IChatProcessor _chatProcessor
+@inject IUserService UserService
 @implements IAsyncDisposable
 @layout HomeLayout
 
 <PageTitle>Private Chat</PageTitle>
-<h3>Chat with Friends</h3>
 
-@if (!isConnected)
-{
-    <div class="input-group">
-        <input @bind="chat.Username" class="form-control" placeholder="what is your name?">
-        <button class="btn btn-primary form-control-append" @onclick="ConnectToHub">Connect</button>
+
+@if (!isConnected && !isLoaded)
+{   <div style="text-align:center; margin-top:100px;">
+        <MudProgressCircular Color="Color.Info" Indeterminate="true" />
     </div>
 }
 else
-{   
-    <div>
-         @foreach (string message in chat.ChatMessages)
-            {   
-                <br/>
-                @message;
+{
+    <h2 style="text-align:center;">Chat with Friends</h2>
+    <div class="message-box">
+            @foreach (string message in chat.ChatMessages)
+            {
+            <div class="@((message.Split(':')[0]==currentUsername?"my-message-body" : "message-body"))">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Title="Person" class="message-icon" />
+                <div class="@((message.Split(':')[0]==currentUsername?"my-message" : "message-text"))">
+                    @if (message.Split(':')[0] != currentUsername)
+                    {
+                      <div class="username">@message.Split(':')[0]</div>
+                    } 
+                    <span>@message.Split(':')[1]</span>
+                </div>
+            </div>
+                ;
             }
     </div>
-   
-    <div class="input-group">
-        <input @bind-value="chat.Message" @bind-value:event="oninput" @onkeyup="HandleInput" class="form-control">
-        <button class="btn btn-primary form-group-append" @onclick="Send" disabled="@(!isConnected)">=></button>
+    <br />
+    <div class="chat-wrapper">   
+        <div class="message-wrapper">
+            <MudIcon Icon="@Icons.Material.Filled.AddCircle" Title="Add" class="chat-upload"/>
+            <textarea placeholder="Type a message" @bind-value="chat.Message" @bind-value:event="oninput" @onkeyup="HandleInput"></textarea>
+            <MudIcon Icon="@Icons.Material.Filled.Send" Title="Send" class="send-message" @onclick="Send" disabled="@(!isConnected)"/>
+        </div>
     </div>
 }
 
-
 @code {
     private HubConnection? hubConnection;
+    private string? currentUsername;
+    private bool isLoaded = false;
     private Chat chat = new() {ChatMessages = new()};
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {   
+        var user = await UserService.GetCurrentUser();
+        if (firstRender)
+        {
+            var loadChat = LoadChatData();
+            var verifyUser = VerifyUserAndConnect(user);
+            await Task.WhenAll(loadChat, verifyUser);
+            isLoaded = true;
+        }
+    }
+
+    private async Task VerifyUserAndConnect(UserStore user)
+    {
+        if (user != null)
+        {   
+            chat.Username = user.Username;
+            currentUsername = user.Username;
+            await ConnectToHub();
+        }
+    }
+
+    private async Task LoadChatData()
+    {
+        var messages = await _chatProcessor.LoadAllMessages();
+        foreach(var message in messages)
+        {
+            string formattedMessage = $"{(string.IsNullOrEmpty(message.Username) ? "" : message.Username + ": ")} {message.Message}";
+            this.chat.ChatMessages.Add(formattedMessage);  
+        }
+        InvokeAsync(StateHasChanged);
+    }
 
     private async Task ConnectToHub()
     {
@@ -46,6 +94,7 @@ else
             string formattedMessage = $"{(string.IsNullOrEmpty(chat.Username) ? "" : chat.Username + ": ")} {chat.Message}";
             this.chat.ChatMessages.Add(formattedMessage);
             InvokeAsync(StateHasChanged);
+            _chatProcessor.SaveMessage(chat).GetAwaiter().GetResult();
         });
 
         await hubConnection.StartAsync();

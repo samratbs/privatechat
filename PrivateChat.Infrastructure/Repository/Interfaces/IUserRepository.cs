@@ -7,7 +7,6 @@ namespace PrivateChat.Infrastructure.Repository
     {
         Task AddUserToDB(User user);
         Task<bool> IsUserAvailable(User user);
-
         Task<List<User>> ValidateCredentials(LoginCredentials userCredentials);
     }
 }

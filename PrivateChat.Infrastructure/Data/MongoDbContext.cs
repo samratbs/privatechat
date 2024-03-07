@@ -27,5 +27,9 @@ namespace PrivateChat.Infrastructure.Data
         {
             return _db.GetCollection<User>(typeof(User).Name);
         }
+        public IMongoCollection<Messages> GetMessagesCollection()
+        {
+            return _db.GetCollection<Messages>(typeof(Messages).Name);
+        }
     }
 }

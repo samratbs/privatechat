@@ -31,7 +31,7 @@ namespace PrivateChat.Domains.Models
             }
             set
             {
-                _avatar=Avatar;
+                _avatar=value;
             }
         }
     }
